@@ -1,0 +1,12 @@
+server:
+  port: 8080
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-service:8761/eureka
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-blog:5431/blogging_services
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: admin

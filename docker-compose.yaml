@@ -1,0 +1,73 @@
+---
+version: '3.7'
+services:
+  ## Postgresql Docker Compose Config
+  postgres-blog:
+    container_name: postgres-blog
+    image: postgres
+    environment:
+      POSTGRES_DB: blogging-services
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-blogging:/data/postgres
+    expose:
+      - "5431"
+    ports:
+      - "5431:5431"
+    command: -p 5431
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=kushwahaankur1993@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=ankur
+    ports:
+      - "5050:80"
+
+  ## Eureka Server
+  discovery-service:
+    image: ankur03553/discovery-service:latest
+    container_name: discovery-service
+    pull_policy: always
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  api-gateway:
+    image: ankur03553/api-gateway:latest
+    container_name: api-gateway_blog
+    pull_policy: always
+    ports:
+      - "8181:8080"
+    expose:
+      - "8181"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY= TRACE
+    depends_on:
+      - discovery-service
+
+## blogging-service
+  blogging-service:
+    image: ankur03553/blog:latest
+    container_name: blogging-service
+    pull_policy: always
+    ports:
+      - "9091:9091"
+    expose:
+      - "9091"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-blog:5431/blogging-services
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY= TRACE
+    depends_on:
+      - discovery-service
+      - postgres-blog
+
+
+
+

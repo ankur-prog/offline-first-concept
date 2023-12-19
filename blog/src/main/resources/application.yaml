@@ -1,0 +1,17 @@
+server:
+  port: 9098
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/blogging-services
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: admin
+
+  jpa:
+    showSql: true
+    hibernate:
+      ddl-auto: update
+    databasePlatform: org.hibernate.dialect.PostgreSQLDialect
+
+  application:
+    name : blogging-service
