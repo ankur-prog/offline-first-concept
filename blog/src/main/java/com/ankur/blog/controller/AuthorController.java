@@ -24,7 +24,6 @@ import java.util.List;
 @RequestMapping("/api/v1/authors")
 @RequiredArgsConstructor
 @Tag(name = "Author",description = "Product API")
-@CrossOrigin(origins = "http://6ed5-185-125-3-4.ngrok-free.app")
 public class AuthorController {
     private final AuthorService authorService;
     @PostMapping

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,7 @@ import java.util.List;
 @RequestMapping("/api/v1/blogs")
 @RequiredArgsConstructor
 @Tag(name = "Blogs",description = "Blogging API")
-@CrossOrigin(origins = "http://6ed5-185-125-3-4.ngrok-free.app")
+
 public class BlogController {
 
     private final BlogPostService blogPostService;
@@ -58,6 +60,22 @@ public class BlogController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(blogs, HttpStatus.OK);
+    }
+
+    /**
+     *
+     * @param id
+     * @return get blog by id
+     */
+    @GetMapping("/{id}")
+    @Operation(summary = "Get Blog by Id")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200",description = "OK"),@ApiResponse(responseCode = "404",description = "Blog not found")})
+    public ResponseEntity<BlogPostResponse> getBlogById(@PathVariable("id") Long id) {
+        BlogPostResponse blog = blogPostService.getBlogById(id);
+        if (blog == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(blog, HttpStatus.OK);
     }
 
     /**

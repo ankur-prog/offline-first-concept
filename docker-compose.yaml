@@ -22,7 +22,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      - PGADMIN_DEFAULT_EMAIL=kushwahaankur1993@gmail.com
+      - PGADMIN_DEFAULT_EMAIL=kushwahaankur30@gmail.com
       - PGADMIN_DEFAULT_PASSWORD=ankur
     ports:
       - "5050:80"

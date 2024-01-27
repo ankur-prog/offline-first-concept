@@ -32,8 +32,11 @@ public class BlogPostService {
         log.info("Blog with author {} and  title {} is created successfully.",blogPost.getAuthor(),blogPost.getTitle());
     }
 
+
+
+
     public List<BlogPostResponse> getAllBlogs() {
-        List<BlogPost> blogs = blogPostRepository.findAll();
+        List<BlogPost> blogs = blogPostRepository.findAllByOrderByModifiedAtDesc();
         return blogs.stream().map(this::mapToProductResponse).collect(Collectors.toList());
     }
 
@@ -68,5 +71,13 @@ public class BlogPostService {
             return true;
         }
         return false;
+    }
+
+    public BlogPostResponse getBlogById(Long id) {
+        Optional<BlogPost> blogPostOptional = blogPostRepository.findById(id);
+        if (blogPostOptional.isPresent()) {
+            return mapToProductResponse(blogPostOptional.get());
+        }
+        return null;
     }
 }
