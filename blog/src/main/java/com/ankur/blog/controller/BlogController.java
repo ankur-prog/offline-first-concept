@@ -88,8 +88,8 @@ public class BlogController {
     @Operation(summary = "modify blog")
     @ApiResponses(value = {@ApiResponse(responseCode = "200",description = "OK"),@ApiResponse(responseCode = "404",description = "Blog not found")})
     public ResponseEntity<String> updateBlog(@PathVariable("id") Long id, @RequestParam("title")  String title,@RequestParam("content") String content) {
-        Boolean updatePrice = blogPostService.updateBlog(id,title,content);
-        if (updatePrice) {
+        Boolean updateBlog = blogPostService.updateBlog(id,title,content);
+        if (updateBlog) {
             return ResponseEntity.ok("Blog  updated successfully.");
         } else return ResponseEntity.notFound().build();
     }

@@ -1,13 +1,16 @@
 package org.example;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DatabaseSynchronizationAuthor {
 
-
-
     public static void main(String[] args) {
         String sourceDbUrl = "jdbc:postgresql://localhost:5432/blogging-services";
-        String targetDbUrl = "jdbc:postgresql://localhost:5431/blogging-services";
+        String targetDbUrl = "jdbc:postgresql://20.115.82.54:5432/blogging-services";
         String username = "postgres";
         String password = "admin";
 
@@ -19,53 +22,36 @@ public class DatabaseSynchronizationAuthor {
              Connection targetConn = DriverManager.getConnection(targetDbUrl, username, password)) {
 
             // Synchronize data from source to target
-            synchronizeBlogPostData(sourceConn, targetConn);
+            synchronizeData(sourceConn, targetConn);
 
             // Synchronize data from target to source
-            synchronizeBlogPostData(targetConn, sourceConn);
+            synchronizeData(targetConn, sourceConn);
 
-
-            System.out.println("Database synchronization complete.");
+            System.out.println("Database synchronization completed.");
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void synchronizeBlogPostData(Connection sourceConn, Connection targetConn) throws SQLException {
-        String selectQuery = "SELECT id, content, created_at, modified_at, title, t_author_id, version FROM t_blog_post";
-
-
-        String insertOrUpdateQuery = "INSERT INTO t_blog_post (id, content, created_at, modified_at, title, t_author_id, version) VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                "ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content, created_at = EXCLUDED.created_at, modified_at = EXCLUDED.modified_at, t_author_id = EXCLUDED.t_author_id, version = EXCLUDED.version";
-
-
-
+    private static void synchronizeData(Connection sourceConn, Connection targetConn) throws SQLException {
+        String selectQuery = "SELECT id, name, email FROM t_author";
+        String insertOrUpdateQuery = "INSERT INTO t_author (id, name, email) VALUES (?, ?, ?) " +
+                "ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email";
 
         try (PreparedStatement selectStmt = sourceConn.prepareStatement(selectQuery);
-
-
-
              ResultSet resultSet = selectStmt.executeQuery();
              PreparedStatement insertOrUpdateStmt = targetConn.prepareStatement(insertOrUpdateQuery)) {
 
             while (resultSet.next()) {
                 long id = resultSet.getLong("id");
-                String content = resultSet.getString("content");
-                Timestamp createdAt = resultSet.getTimestamp("created_at");
-                Timestamp modifiedAt = resultSet.getTimestamp("modified_at");
-                String title = resultSet.getString("title");
-                long authorId = resultSet.getLong("t_author_id");
-                double version = resultSet.getDouble("version");
+                String name = resultSet.getString("name");
+                String email = resultSet.getString("email");
 
                 // Set parameters for insertOrUpdateStmt
                 insertOrUpdateStmt.setLong(1, id);
-                insertOrUpdateStmt.setString(2, content);
-                insertOrUpdateStmt.setTimestamp(3, createdAt);
-                insertOrUpdateStmt.setTimestamp(4, modifiedAt);
-                insertOrUpdateStmt.setString(5, title);
-                insertOrUpdateStmt.setLong(6, authorId);
-                insertOrUpdateStmt.setDouble(7, version);
+                insertOrUpdateStmt.setString(2, name);
+                insertOrUpdateStmt.setString(3, email);
 
                 // Execute the insertOrUpdate query
                 insertOrUpdateStmt.executeUpdate();
