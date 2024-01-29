@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class DatabaseSynchronizationAuthor {
 
     public static void main(String[] args) {
-        String sourceDbUrl = "jdbc:postgresql://localhost:5432/blogging-services";
+        String sourceDbUrl = "jdbc:postgresql://localhost:5431/blogging-services";
         String targetDbUrl = "jdbc:postgresql://20.115.82.54:5432/blogging-services";
         String username = "postgres";
         String password = "admin";
@@ -22,16 +22,24 @@ public class DatabaseSynchronizationAuthor {
              Connection targetConn = DriverManager.getConnection(targetDbUrl, username, password)) {
 
             // Synchronize data from source to target
-            synchronizeData(sourceConn, targetConn);
+            synchronizeDataFromSourceToTarget(sourceConn, targetConn);
 
             // Synchronize data from target to source
-            synchronizeData(targetConn, sourceConn);
+            synchronizeDataFromTargetToSource(targetConn, sourceConn);
 
             System.out.println("Database synchronization completed.");
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void synchronizeDataFromSourceToTarget(Connection sourceConn, Connection targetConn) throws SQLException {
+        synchronizeData(sourceConn, targetConn);
+    }
+
+    private static void synchronizeDataFromTargetToSource(Connection sourceConn, Connection targetConn) throws SQLException {
+        synchronizeData(sourceConn, targetConn);
     }
 
     private static void synchronizeData(Connection sourceConn, Connection targetConn) throws SQLException {

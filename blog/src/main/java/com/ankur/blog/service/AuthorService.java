@@ -17,10 +17,11 @@ import java.util.stream.Collectors;
 public class AuthorService {
 
     private final AuthorRepository authorRepository;
+
     public void createAuthor(AuthorRequest authorRequest) {
         Author author = Author.builder().email(authorRequest.getEmail()).name(authorRequest.getName()).build();
         authorRepository.save(author);
-        log.info("Author with name {} and  email {} is created successfully.",author.getName(),author.getEmail());
+        log.info("Author with name {} and  email {} is created successfully.", author.getName(), author.getEmail());
 
 
     }
@@ -30,7 +31,7 @@ public class AuthorService {
         return authors.stream().map(this::mapToAuthorResponse).collect(Collectors.toList());
     }
 
-    private AuthorResponse  mapToAuthorResponse(Author author) {
-        return  AuthorResponse.builder().id(author.getId()).name(author.getName()).email(author.getEmail()).build();
+    private AuthorResponse mapToAuthorResponse(Author author) {
+        return AuthorResponse.builder().id(author.getId()).name(author.getName()).email(author.getEmail()).build();
     }
 }

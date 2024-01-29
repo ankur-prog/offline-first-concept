@@ -1,12 +1,10 @@
 package org.example;
 import java.sql.*;
 
-public class DatabaseSynchronizationblogs {
-
-
+public class DatabaseSynchronizationBlogs {
 
     public static void main(String[] args) {
-        String sourceDbUrl = "jdbc:postgresql://localhost:5432/blogging-services";
+        String sourceDbUrl = "jdbc:postgresql://localhost:5431/blogging-services";
         String targetDbUrl = "jdbc:postgresql://20.115.82.54:5432/blogging-services";
         String username = "postgres";
         String password = "admin";
@@ -19,11 +17,10 @@ public class DatabaseSynchronizationblogs {
              Connection targetConn = DriverManager.getConnection(targetDbUrl, username, password)) {
 
             // Synchronize data from source to target
-            synchronizeBlogPostData(sourceConn, targetConn);
+            synchronizeDataFromSourceToTarget(sourceConn, targetConn);
 
             // Synchronize data from target to source
-            synchronizeBlogPostData(targetConn, sourceConn);
-
+            synchronizeDataFromTargetToSource(targetConn, sourceConn);
 
             System.out.println("Database synchronization complete.");
 
@@ -32,20 +29,20 @@ public class DatabaseSynchronizationblogs {
         }
     }
 
-    private static void synchronizeBlogPostData(Connection sourceConn, Connection targetConn) throws SQLException {
+    private static void synchronizeDataFromSourceToTarget(Connection sourceConn, Connection targetConn) throws SQLException {
+        synchronizeData(sourceConn, targetConn);
+    }
+
+    private static void synchronizeDataFromTargetToSource(Connection sourceConn, Connection targetConn) throws SQLException {
+        synchronizeData(sourceConn, targetConn);
+    }
+
+    private static void synchronizeData(Connection sourceConn, Connection targetConn) throws SQLException {
         String selectQuery = "SELECT id, content, created_at, modified_at, title, t_author_id, version FROM t_blog_post";
-
-
         String insertOrUpdateQuery = "INSERT INTO t_blog_post (id, content, created_at, modified_at, title, t_author_id, version) VALUES (?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content, created_at = EXCLUDED.created_at, modified_at = EXCLUDED.modified_at, t_author_id = EXCLUDED.t_author_id, version = EXCLUDED.version";
 
-
-
-
         try (PreparedStatement selectStmt = sourceConn.prepareStatement(selectQuery);
-
-
-
              ResultSet resultSet = selectStmt.executeQuery();
              PreparedStatement insertOrUpdateStmt = targetConn.prepareStatement(insertOrUpdateQuery)) {
 
@@ -71,5 +68,30 @@ public class DatabaseSynchronizationblogs {
                 insertOrUpdateStmt.executeUpdate();
             }
         }
+
+        String selectDeletedRecordsQuery = "SELECT id, table_name FROM deleted_records";
+        String deleteQueryTemplate = "DELETE FROM %s WHERE id = ?";
+        String deleteFromDeletedRecordsQuery = "DELETE FROM deleted_records WHERE id = ? AND table_name = ?";
+
+
+        try (PreparedStatement selectDeletedRecordsStmt = sourceConn.prepareStatement(selectDeletedRecordsQuery);
+             ResultSet deletedRecordsResultSet = selectDeletedRecordsStmt.executeQuery();
+             PreparedStatement deleteFromDeletedRecordsStmt = sourceConn.prepareStatement(deleteFromDeletedRecordsQuery)) {
+
+            while (deletedRecordsResultSet.next()) {
+                long id = deletedRecordsResultSet.getLong("id");
+                String tableName = deletedRecordsResultSet.getString("table_name");
+                String deleteQuery = String.format(deleteQueryTemplate, tableName);
+
+                try (PreparedStatement deleteStmt = targetConn.prepareStatement(deleteQuery)) {
+                    deleteStmt.setLong(1, id);
+                    deleteStmt.executeUpdate();
+                }
+
+                deleteFromDeletedRecordsStmt.setLong(1, id);
+                deleteFromDeletedRecordsStmt.setString(2, tableName);
+                deleteFromDeletedRecordsStmt.executeUpdate();
+            }
     }
+}
 }
